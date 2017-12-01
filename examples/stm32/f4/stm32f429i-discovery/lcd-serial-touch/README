@@ -1,0 +1,8 @@
+README lcd-serial-touch
+-----------------
+
+This example is based on lcd-serial. The serial part is not used anymore, but it remains in case someone is interested to use it.
+
+The goal of this example is to show the touchscreen functionality of the stm32f429discovery board.
+
+First, it prints the contents of some configuration registers of the touchscreen IC controller (stmpe811). Then, it shows the touchscreen controller readings, the LCD corresponding coordinates and also, with a pixel dot, the current corresponding touch position.
