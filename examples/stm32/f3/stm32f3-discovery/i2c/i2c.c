@@ -73,23 +73,23 @@ static void i2c_setup(void)
 static void usart_setup(void)
 {
 	/* Enable clocks for GPIO port A (for GPIO_USART2_TX) and USART2. */
-	rcc_periph_clock_enable(RCC_USART2);
-	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_USART1);
+	rcc_periph_clock_enable(RCC_GPIOC);
 
 	/* Setup GPIO pin GPIO_USART2_TX/GPIO9 on GPIO port A for transmit. */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2 | GPIO3);
-	gpio_set_af(GPIOA, GPIO_AF7, GPIO2| GPIO3);
+	gpio_mode_setup(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO4 | GPIO5);
+	gpio_set_af(GPIOC, GPIO_AF7, GPIO4| GPIO5);
 
 	/* Setup UART parameters. */
-	usart_set_baudrate(USART2, 115200);
-	usart_set_databits(USART2, 8);
-	usart_set_stopbits(USART2, USART_STOPBITS_1);
-	usart_set_mode(USART2, USART_MODE_TX_RX);
-	usart_set_parity(USART2, USART_PARITY_NONE);
-	usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
+	usart_set_baudrate(USART1, 115200);
+	usart_set_databits(USART1, 8);
+	usart_set_stopbits(USART1, USART_STOPBITS_1);
+	usart_set_mode(USART1, USART_MODE_TX_RX);
+	usart_set_parity(USART1, USART_PARITY_NONE);
+	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
 
 	/* Finally enable the USART. */
-	usart_enable(USART2);
+	usart_enable(USART1);
 }
 
 static void gpio_setup(void)
@@ -107,9 +107,9 @@ int _write(int file, char *ptr, int len)
         if (file == 1) {
                 for (i = 0; i < len; i++) {
 			if (ptr[i] == '\n') {
-				usart_send_blocking(USART2, '\r');
+				usart_send_blocking(USART1, '\r');
 			}
-                        usart_send_blocking(USART2, ptr[i]);
+                        usart_send_blocking(USART1, ptr[i]);
 		}
                 return i;
         }
@@ -142,12 +142,22 @@ int main(void)
 	usart_setup();
 	printf("Hello, we're running\n");
 	i2c_setup();
+
 	uint8_t cmd = ACC_CTRL_REG1_A;
 	uint8_t data;
 	i2c_transfer7(I2C1, I2C_ACC_ADDR, &cmd, 1, &data, 1);
+        printf("CTRL REG1_A %X\n", data);
+        uint8_t cmd2[2]={ACC_CTRL_REG1_A, 0x37};
+	i2c_transfer7(I2C1, I2C_ACC_ADDR, cmd2, 2, &data, 0);
+	i2c_transfer7(I2C1, I2C_ACC_ADDR, &cmd, 1, &data, 1);
+        printf("REG1 A: %X\n",  data);
 	cmd = ACC_CTRL_REG4_A;
 	i2c_transfer7(I2C1, I2C_ACC_ADDR, &cmd, 1, &data, 1);
+        printf("REG4 A: %X\n",  data);
 	int16_t acc_x;
+
+        uint16_t data_in;
+        int i;
 
 	while (1) {
 
